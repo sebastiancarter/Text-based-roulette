@@ -24,6 +24,71 @@ struct shotgun{
     int length;
 };
 
+
+void spyGlass(struct shotgun *gun, int currRound){
+    clearScreen();
+    printf("You pick up the shotgun and rack the slide a little, just to see that...\n");
+    sleep(2);
+    clearScreen();
+    printf("The next round is");
+    if(gun->shells[currRound] == 1){
+        printf(" LIVE!\n");
+    }else{
+        printf(" BLANK!\n");
+    }
+    sleep(2);
+    clearScreen();
+}
+
+
+void drinkBeer(struct shotgun *gun, int *currRound){
+    printf("GLUGGLUGGLUGGLUGGLUG\n");
+    printf("You snatch the gun off of the table and \n");
+    printf("CHICKA CHICKA\n");
+    printf("Pump the action!\n");
+    sleep(2);
+    if(gun->shells[*currRound] == 1){
+        printf("A live");
+    }else{
+        printf("A blank");
+    }
+    printf(" round goes flying out onto the ground!\n");
+    sleep(2);
+    clearScreen();
+    *currRound += 1;
+}
+
+void smokeCig(int *health){
+    printf("You grab your carton of cigarrettes and pull one out\n");
+    printf("CLICK, CLICK, CLI-FWOOSH\n");
+    printf("You bring your lighter to the cigarette and inhale deep!\n");
+    *health+=1;
+    printf("Your health is now %d\n", *health);
+    sleep(2);
+    clearScreen();
+}
+   
+//TODO: figure out how to implement handcuffs
+
+// for setting items, have an items array, add 1 to a total num items counter and then random number generate until you get
+// a number that isnt associated with any items or you have hit like 4 items i think it should max out at 4
+void setItems(int *arrayItems){
+    int itemToAdd;
+    int addedItems;
+    arrayItems[0] = 0;
+    arrayItems[1] = 0;
+    arrayItems[2] = 0;
+    
+    addedItems = 0;
+    itemToAdd = rand()%4;
+    while(itemToAdd != 3 && addedItems < 4){
+        arrayItems[itemToAdd] += 1;
+        itemToAdd = rand()%4;
+        addedItems += 1;
+    }
+}
+
+    
 void loadGun(struct shotgun *gun){
     int loader, arrSize, live, blank;
     // loading the first 2 shells (should always have at least 2 shells) 
@@ -43,8 +108,6 @@ void loadGun(struct shotgun *gun){
     }else{
         blank += 1;
     }
-        
-
 
     // initializing loader
     loader = 0;
@@ -86,11 +149,10 @@ void loadGun(struct shotgun *gun){
 
 
 int main(){
-    int playerLife, enemyLife, currShell, input, dealerChoice;
+    int playerLife, enemyLife, currShell, input, dealerChoice, itemArray[3];
+    struct shotgun gameGun;
     playerLife = 4;
     enemyLife = 4;
-    struct shotgun gameGun;
-    
     
 
 
@@ -98,6 +160,7 @@ int main(){
     while(playerLife > 0 && enemyLife > 0){
         currShell = 0;
         loadGun(&gameGun);
+        setItems(&itemArray);
         while(playerLife > 0 && enemyLife > 0 && gameGun.length > currShell){
             sleep(2);
             clearScreen();
@@ -105,14 +168,42 @@ int main(){
             // resetting input
             input = 0;
             while(input > 2 || input < 1){
+                printf("You have %d beers, %d spyglasses and %d ciggies\n", itemArray[0], itemArray[1], itemArray[2]);
                 printf("there are %d shells\n", (gameGun.length - currShell));
                 printf("you have %d life\n", playerLife);
                 printf("the dealer has %d life\n", enemyLife);
                 printf("what would you like to do?\n");
                 printf("1. shoot the enemy\n");
                 printf("2. shoot yourself\n");
+                if(itemArray[0] > 0){
+                    printf("3. drink a beer\n");
+                }
+                if(itemArray[1] > 0){
+                    printf("4. use a spyglass\n");
+                }
+                if(itemArray[2] > 0){
+                    printf("5. smoke a marlboro\n");
+                }
+
+                // using items
                 scanf("%d", &input);
-            } 
+                if(input == 3 && itemArray[0] > 0){
+                    itemArray[0] -= 1;
+                    drinkBeer(&gameGun, &currShell);
+                }else if(input == 4 && itemArray[1] > 0){
+                    itemArray[1] -= 1;
+                    spyGlass(&gameGun, currShell);
+                }else if(input == 5 && itemArray[2] > 0){
+                    itemArray[2] -= 1;
+                    smokeCig(&playerLife);
+                }
+            }
+            
+            // have to check if drinking a beer has ejected the last shell
+            if(currShell == gameGun.length){
+                continue;
+            }
+
             clearScreen();
             printf("you nervously squeeze the trigger...\n");
             sleep(2);
@@ -131,7 +222,7 @@ int main(){
                     playerLife -= gameGun.shells[currShell];
                     currShell += 1;
                     if(gameGun.shells[currShell-1] == 1){
-                        printf("You stare down the barrel of the gun and BANG! You see a flash and then nothing...\n");
+                        printf("BANG! You see a flash and then nothing...\n");
                     }else{
                         printf("CLICK...\n");
                         continue;
