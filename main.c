@@ -149,152 +149,176 @@ void loadGun(struct shotgun *gun){
 
 
 int main(){
-    int playerLife, enemyLife, currShell, input, dealerChoice, itemArray[3];
+    int playerLife, enemyLife, currShell, input, dealerChoice, itemArray[3], score;
+    char doubleRNothin;
     struct shotgun gameGun;
-    playerLife = 4;
-    enemyLife = 4;
     
+    score = 0;
+    doubleRNothin = 'n';
 
 
     srand(time(NULL));
-    while(playerLife > 0 && enemyLife > 0){
-        currShell = 0;
-        loadGun(&gameGun);
-        setItems(&itemArray);
-        while(playerLife > 0 && enemyLife > 0 && gameGun.length > currShell){
-            sleep(2);
-            clearScreen();
-            // PLAYER TURN
-            // resetting input
-            input = 0;
-            while(input > 2 || input < 1){
-                printf("You have %d beers, %d spyglasses and %d ciggies\n", itemArray[0], itemArray[1], itemArray[2]);
-                printf("there are %d shells\n", (gameGun.length - currShell));
-                printf("you have %d life\n", playerLife);
-                printf("the dealer has %d life\n", enemyLife);
-                printf("what would you like to do?\n");
-                printf("1. shoot the enemy\n");
-                printf("2. shoot yourself\n");
-                if(itemArray[0] > 0){
-                    printf("3. drink a beer\n");
-                }
-                if(itemArray[1] > 0){
-                    printf("4. use a spyglass\n");
-                }
-                if(itemArray[2] > 0){
-                    printf("5. smoke a marlboro\n");
-                }
 
-                // using items
-                scanf("%d", &input);
-                if(input == 3 && itemArray[0] > 0){
-                    itemArray[0] -= 1;
-                    drinkBeer(&gameGun, &currShell);
-                }else if(input == 4 && itemArray[1] > 0){
-                    itemArray[1] -= 1;
-                    spyGlass(&gameGun, currShell);
-                }else if(input == 5 && itemArray[2] > 0){
-                    itemArray[2] -= 1;
-                    smokeCig(&playerLife);
-                }
-            }
-            
-            // have to check if drinking a beer has ejected the last shell
-            if(currShell == gameGun.length){
-                continue;
-            }
+    do{
+        playerLife = 4;
+        enemyLife = 4;
 
-            clearScreen();
-            printf("you nervously squeeze the trigger...\n");
-            sleep(2);
-            switch(input){
-                case 1:{
-                    enemyLife -= gameGun.shells[currShell];
-                    currShell += 1;
-                    if(gameGun.shells[currShell-1] == 1){
-                        printf("BANG! The shotgun blows a massive hole in the dealers face\n");
-                    }else{
-                        printf("CLICK...\n");
+        while(playerLife > 0 && enemyLife > 0){
+            currShell = 0;
+            loadGun(&gameGun);
+            setItems(&itemArray);
+            while(playerLife > 0 && enemyLife > 0 && gameGun.length > currShell){
+                sleep(2);
+                clearScreen();
+                // PLAYER TURN
+                // resetting input
+                input = 0;
+                while(input > 2 || input < 1){
+                    printf("You have %d beers, %d spyglasses and %d ciggies\n", itemArray[0], itemArray[1], itemArray[2]);
+                    printf("there are %d shells\n", (gameGun.length - currShell));
+                    printf("you have %d life\n", playerLife);
+                    printf("the dealer has %d life\n", enemyLife);
+                    printf("what would you like to do?\n");
+                    printf("1. shoot the enemy\n");
+                    printf("2. shoot yourself\n");
+                    if(itemArray[0] > 0){
+                        printf("3. drink a beer\n");
                     }
-                    break;
+                    if(itemArray[1] > 0){
+                        printf("4. use a spyglass\n");
+                    }
+                    if(itemArray[2] > 0){
+                        printf("5. smoke a marlboro\n");
+                    }
+
+                    // using items
+                    scanf("%d", &input);
+                    if(input == 3 && itemArray[0] > 0){
+                        itemArray[0] -= 1;
+                        drinkBeer(&gameGun, &currShell);
+                    }else if(input == 4 && itemArray[1] > 0){
+                        itemArray[1] -= 1;
+                        spyGlass(&gameGun, currShell);
+                    }else if(input == 5 && itemArray[2] > 0){
+                        itemArray[2] -= 1;
+                        smokeCig(&playerLife);
+                    }
                 }
-                case 2:{
-                    playerLife -= gameGun.shells[currShell];
-                    currShell += 1;
-                    if(gameGun.shells[currShell-1] == 1){
-                        printf("BANG! You see a flash and then nothing...\n");
-                    }else{
-                        printf("CLICK...\n");
-                        continue;
-                    }
-                    break;
-                }   
-                default:
+                
+                // have to check if drinking a beer has ejected the last shell
+                if(currShell == gameGun.length){
                     continue;
-            }
-
-            // handling if you kill yourself or use all the shells
-            if(currShell == gameGun.length || playerLife == 0){
-                break;
-            }
-            sleep(2);
-
-            clearScreen();
-            // DEALER TURN
-            // TODO: make the dealer skip your turn if he manages to not kill himself
-            printf("the dealer picks up the gun...\n");
-            dealerChoice = rand() % 2;
-            sleep(2);
-            clearScreen();
-            switch(dealerChoice){
-                case 0:{
-                    printf("and turns it on you!\n");
-                    sleep(2);
-                    clearScreen();
-                    printf("You watch, paralyzed in fear as his arms tense up and...\n");
-                    sleep(4);
-                    clearScreen();
-                    playerLife -= gameGun.shells[currShell];
-                    currShell += 1;
-                    if(gameGun.shells[currShell-1] == 1){
-                        printf("BANG! you see a flash, and DIE!\n");
-                    }else{
-                        printf("CLICK...\n");
-                    }
-                    break;
-                }
-                case 1:{
-                    printf("and turns it on himself!\n");
-                    sleep(2);
-                    clearScreen();
-                    printf("You watch, paralyzed in fear as his arms tense up and...\n");
-                    sleep(4);
-                    clearScreen();
-                    enemyLife -= gameGun.shells[currShell];
-                    currShell += 1;
-                    if(gameGun.shells[currShell-1] == 1){
-                        printf("BANG! you see a flash, and see his brains fly all over the room!\n");
-                    }else{
-                        printf("CLICK...\n");
-                    }
-                    break;
                 }
 
+                clearScreen();
+                printf("you nervously squeeze the trigger...\n");
+                sleep(2);
+                switch(input){
+                    case 1:{
+                        enemyLife -= gameGun.shells[currShell];
+                        currShell += 1;
+                        if(gameGun.shells[currShell-1] == 1){
+                            printf("BANG! The shotgun blows a massive hole in the dealers face\n");
+                            score += 100;
+                        }else{
+                            printf("CLICK...\n");
+                        }
+                        break;
+                    }
+                    case 2:{
+                        playerLife -= gameGun.shells[currShell];
+                        currShell += 1;
+                        if(gameGun.shells[currShell-1] == 1){
+                            printf("BANG! You see a flash and then nothing...\n");
+                        }else{
+                            printf("CLICK...\n");
+                            score += 200;
+                            continue;
+                        }
+                        break;
+                    }   
+                    default:
+                        continue;
+                }
+
+                // handling if you kill yourself or the enemy or use all the shells
+                if(currShell == gameGun.length || playerLife < 1 || enemyLife < 1){
+                    break;
+                }
+                sleep(2);
+
+                clearScreen();
+                // DEALER TURN
+                // TODO: make the dealer skip your turn if he manages to not kill himself
+                printf("the dealer picks up the gun...\n");
+                dealerChoice = rand() % 2;
+                sleep(2);
+                clearScreen();
+                switch(dealerChoice){
+                    case 0:{
+                        printf("and turns it on you!\n");
+                        sleep(2);
+                        clearScreen();
+                        printf("You watch, paralyzed in fear as his arms tense up and...\n");
+                        sleep(4);
+                        clearScreen();
+                        playerLife -= gameGun.shells[currShell];
+                        currShell += 1;
+                        if(gameGun.shells[currShell-1] == 1){
+                            printf("BANG! you see a flash, and DIE!\n");
+                        }else{
+                            printf("CLICK...\n");
+                        }
+                        break;
+                    }
+                    case 1:{
+                        printf("and turns it on himself!\n");
+                        sleep(2);
+                        clearScreen();
+                        printf("You watch, paralyzed in fear as his arms tense up and...\n");
+                        sleep(4);
+                        clearScreen();
+                        enemyLife -= gameGun.shells[currShell];
+                        currShell += 1;
+                        if(gameGun.shells[currShell-1] == 1){
+                            printf("BANG! you see a flash, and see his brains fly all over the room!\n");
+                        }else{
+                            printf("CLICK...\n");
+                        }
+                        break;
+                    }
+
+                }
+            }
+            sleep(2); 
+            clearScreen();
+            printf("ROUND OVER\n");
+            sleep(2);
+            clearScreen();
+        }
+        if(playerLife < 1){
+            printf("YOU LOSE\n");
+            if(doubleRNothin == 'y'){
+                doubleRNothin = 'n';
+                score = 0;
+            }
+        }else{
+            printf("YOU WIN!\n");
+            score += 1000;
+                
+            printf("your current score is %d\n", score);
+            printf("double or nothing? (y/n): ");
+            scanf(" %c", &doubleRNothin);
+            // one could argue this isn't technically double or nothing lol
+            if(doubleRNothin == 'y'){
+                score = score*2;
             }
         }
-        sleep(2); 
-        clearScreen();
-        printf("ROUND OVER\n");
-        sleep(2);
-        clearScreen();
-    }
-    if(playerLife < 1){
-        printf("YOU LOSE\n");
-    }else{
-        printf("YOU WIN!\n");
-    }
+    }while(doubleRNothin == 'y');
+
+    printf("your final score is: %d\n", score);
     printf("Thank you for playing!");
     return EXIT_SUCCESS;
 
-}
+    }
 
