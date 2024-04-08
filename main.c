@@ -26,10 +26,8 @@ struct shotgun {
 
 
 void spyGlass(struct shotgun *gun, int currRound) {
-    clearScreen();
     printf("You pick up the shotgun and rack the slide a little, just to see that...\n");
     sleep(2);
-    clearScreen();
     printf("The next round is");
     if (gun->shells[currRound] == 1) {
         printf(" LIVE!\n");
@@ -73,7 +71,7 @@ void smokeCig(int *health) {
 
 // for setting items, have an items array, add 1 to a total num items counter and then random number generate until you get
 // a number that isnt associated with any items or you have hit like 4 items i think it should max out at 4
-void setItems(int *arrayItems) {
+void setItems(int arrayItems[]) {
     int itemToAdd;
     int addedItems;
     arrayItems[0] = 0;
@@ -167,7 +165,7 @@ int main() {
             enemyCuffed = 0;
             currShell = 0;
             loadGun(&gameGun);
-            setItems(&playerItemArray);
+            setItems(playerItemArray);
             while (playerLife > 0 && enemyLife > 0 && gameGun.length > currShell) {
                 sleep(2);
                 clearScreen();
@@ -215,6 +213,8 @@ int main() {
                             // cuff him for 2 turns
                             enemyCuffed = 2;
                             printf("You put the enemy into handcuffs!, he can't move for a few turns!\n");
+                            sleep(2);
+                            clearScreen();
                         }
                     }
 
