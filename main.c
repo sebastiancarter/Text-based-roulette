@@ -9,13 +9,11 @@ void clearScreen(){
     system("cls");
 }
 #else
-
+// linux or unix based OS
 #include <unistd.h>
-
 void clearScreen() {
     system("clear");
 }
-
 #endif
 
 
@@ -42,6 +40,7 @@ void spyGlass(struct shotgun *gun, int currRound) {
 void drinkBeer(struct shotgun *gun, int *currRound) {
     printf("GLUGGLUGGLUGGLUGGLUG\n");
     printf("You snatch the gun off of the table and \n");
+    sleep(2);
     printf("CHICKA CHICKA\n");
     printf("Pump the action!\n");
     sleep(2);
@@ -60,14 +59,89 @@ void smokeCig(int *health) {
     printf("You grab your carton of cigarrettes and pull one out\n");
     printf("CLICK, CLICK, CLI-FWOOSH\n");
     printf("You bring your lighter to the cigarette and inhale deep!\n");
-    *health += 1;
-    printf("Your health is now %d\n", *health);
+    if(*health < 4){
+        *health += 1;
+        printf("Your health is now %d\n", *health);
+    }else{
+        printf("You are already at max health, no change!");
+    }
     sleep(2);
     clearScreen();
 }
 
 
-//TODO: figure out how to implement handcuffs
+int dealerLogic(struct shotgun gun, int *currentShell, int *Health, int itemArray[]){
+    // should know what the final shell is
+    // should use the spyglass immediately and make the right choice unless its the last shell
+    // should heal when possible
+    // should use cuffs when possible
+    // should drink beer unless spyglass is available
+    // no using the same thing twice
+    // put the stuff that wouldn't result in an action being made first
+
+    // handling cigarettes
+    while(itemArray[2] > 0 && *Health < 4){
+        itemArray[2] -= 1;
+        *Health = *Health + 1;
+        printf("The dealer smokes a cigarette\n");
+        printf("His health is now %d\n", *Health);
+        sleep(2);
+        clearScreen();
+    }
+
+
+    // beer logic
+    // if you have a beer and you do not have a spyglass or there are 2 shells left (you can have a spyglass in this case)
+    // oh yeah also if its the last round in the gun, don't drink a beer
+    if(itemArray[0] > 0 && (itemArray[1] < 1 || (*currentShell + 2) == gun.length)){
+        itemArray[0] -= 1;
+        printf("The dealer drinks a beer!, he ejects a ");
+        sleep(2);
+        if(gun.shells[*currentShell] == 0){
+            printf("BLANK round!\n");
+        }else{
+            printf("LIVE round!\n");
+        }
+        *currentShell += 1;
+        printf("he has %d beers left!\n", itemArray[0]);
+    }
+
+
+    // return item uses (basically the dealer's logic
+
+    // normal logic for last shell in the gun
+    if(*currentShell == (gun.length - 1)){
+        if(gun.shells[*currentShell] == 0){
+            // dealer shoots himself
+            return 1;
+        }else{
+            // shoots you
+            return 0;
+        }
+    }
+        
+    
+    // spyglass logic
+    if(itemArray[1] > 0){
+        itemArray[1] -= 1;
+        printf("The dealer uses a spyglass!\nHe has %d spyglasses left!\n", itemArray[1]);
+        sleep(2);
+        clearScreen();
+        if(gun.shells[*currentShell] == 0){
+            // dealer shoots himself
+            return 1;
+        }else{
+            // shoots you
+            return 0;
+        }
+    }
+
+    // finally, if this dude has no items that will effect his decision
+    return rand()%2;
+
+
+} 
+
 
 // for setting items, have an items array, add 1 to a total num items counter and then random number generate until you get
 // a number that isnt associated with any items or you have hit like 4 items i think it should max out at 4
@@ -82,11 +156,21 @@ void setItems(int arrayItems[]) {
     addedItems = 0;
     itemToAdd = rand() % 5;
     while (itemToAdd != 4 && addedItems < 4) {
+        if(itemToAdd == 0){
+            printf("Beer!\n");
+        }else if(itemToAdd == 1){
+            printf("Spyglass!\n");
+        }else if(itemToAdd == 2){
+            printf("cigarette!\n");
+        }else if(itemToAdd == 3){
+            printf("cuffs!\n");
+        }
         arrayItems[itemToAdd] += 1;
         itemToAdd = rand() % 4;
         addedItems += 1;
     }
 }
+
 
 
 void loadGun(struct shotgun *gun) {
@@ -147,7 +231,16 @@ void loadGun(struct shotgun *gun) {
 
 
 int main() {
-    int playerLife, enemyLife, currShell, input, dealerChoice, playerItemArray[4], score, enemyCuffed, skipTurn;
+    int playerLife, 
+        enemyLife, 
+        currShell, 
+        input, 
+        dealerChoice, 
+        playerItemArray[4], 
+        enemyItemArray[4],
+        score, 
+        enemyCuffed, 
+        skipTurn;
     char doubleRNothin;
     struct shotgun gameGun;
 
@@ -155,7 +248,7 @@ int main() {
     doubleRNothin = 'n';
 
     srand(time(NULL));
-
+    clearScreen();
     do {
         playerLife = 4;
         enemyLife = 4;
@@ -166,6 +259,7 @@ int main() {
             currShell = 0;
             loadGun(&gameGun);
             setItems(playerItemArray);
+            setItems(enemyItemArray);
             while (playerLife > 0 && enemyLife > 0 && gameGun.length > currShell) {
                 sleep(2);
                 clearScreen();
@@ -274,12 +368,14 @@ int main() {
                 // TODO: make the dealer skip your turn if he manages to not kill himself
                 // if the enemy is still cuffed, skip the enemy turn
                 if (enemyCuffed > 0) {
-                    printf("The dealer is cuffed, his turn is skipped");
+                    printf("The dealer is cuffed, his turn is skipped\n");
                     enemyCuffed -= 1;
+                    sleep(2);
+                    clearScreen();
                     continue;
                 }
+                dealerChoice = dealerLogic(gameGun, &currShell, &enemyLife,  enemyItemArray);
                 printf("the dealer picks up the gun...\n");
-                dealerChoice = rand() % 2;
                 sleep(2);
                 clearScreen();
                 switch (dealerChoice) {
@@ -293,7 +389,7 @@ int main() {
                         playerLife -= gameGun.shells[currShell];
                         currShell += 1;
                         if (gameGun.shells[currShell - 1] == 1) {
-                            printf("BANG! you see a flash, and DIE!\n");
+                            printf("BANG! you see a flash, and then nothing!\n");
                         } else {
                             printf("CLICK...\n");
                         }
