@@ -70,7 +70,7 @@ void smokeCig(int *health) {
 }
 
 
-int dealerLogic(struct shotgun gun, int *currentShell, int *enemyHealth, int itemArray[]){
+int dealerLogic(struct shotgun gun, int *currentShell, int *Health, int itemArray[]){
     // should know what the final shell is
     // should use the spyglass immediately and make the right choice unless its the last shell
     // should heal when possible
@@ -80,11 +80,11 @@ int dealerLogic(struct shotgun gun, int *currentShell, int *enemyHealth, int ite
     // put the stuff that wouldn't result in an action being made first
 
     // handling cigarettes
-    while(itemArray[2] > 0 && *enemyHealth < 4){
+    while(itemArray[2] > 0 && *Health < 4){
         itemArray[2] -= 1;
-        *enemyHealth += 1;
+        *Health = *Health + 1;
         printf("The dealer smokes a cigarette\n");
-        printf("His health is now %d\n", *enemyHealth);
+        printf("His health is now %d\n", *Health);
         sleep(2);
         clearScreen();
     }
@@ -93,7 +93,7 @@ int dealerLogic(struct shotgun gun, int *currentShell, int *enemyHealth, int ite
     // beer logic
     // if you have a beer and you do not have a spyglass or there are 2 shells left (you can have a spyglass in this case)
     // oh yeah also if its the last round in the gun, don't drink a beer
-    if(itemArray[0] > 0 && (itemArray[1] < 1 || (*currentShell + 2) == gun.length) || *currentShell == (gun.length -1)){
+    if(itemArray[0] > 0 && (itemArray[1] < 1 || (*currentShell + 2) == gun.length)){
         itemArray[0] -= 1;
         printf("The dealer drinks a beer!, he ejects a ");
         sleep(2);
@@ -374,7 +374,7 @@ int main() {
                     clearScreen();
                     continue;
                 }
-                dealerChoice = dealerLogic(gameGun, &enemyLife, &currShell, enemyItemArray);
+                dealerChoice = dealerLogic(gameGun, &currShell, &enemyLife,  enemyItemArray);
                 printf("the dealer picks up the gun...\n");
                 sleep(2);
                 clearScreen();
