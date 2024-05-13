@@ -105,6 +105,9 @@ int dealerLogic(struct shotgun gun, int *currentShell, int *Health, int itemArra
     // no using the same thing twice
     // put the stuff that wouldn't result in an action being made first
 
+
+    // TODO: make the dealer also use the saw
+
     // handling cigarettes
     while(itemArray[2] > 0 && *Health < 4){
         itemArray[2] -= 1;

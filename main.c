@@ -65,7 +65,6 @@ int main() {
                         if (playerItemArray[4] > 0) {
                             printf("7. use a saw\n");
                         }
-
                         // using items
                         scanf("%d", &input);
                         if (input == 3 && playerItemArray[0] > 0) {
